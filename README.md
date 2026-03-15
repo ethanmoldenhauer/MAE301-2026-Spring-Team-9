@@ -1,0 +1,1 @@
+MAE301 course project to implement, train, and analyze a nanoGPT style language model. Develop an AI startup concept and build a Minimum Viable Product (MVP) that uses the nanoGPT model or other models you learned throughout class.
