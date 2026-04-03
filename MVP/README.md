@@ -64,15 +64,6 @@ python nestgpt_agent.py
 
 `http://127.0.0.1:8000`
 
-## How it maps to your class goal
-
-This is a good MVP for your problem statement because it already demonstrates:
-
-- an AI chatbot
-- retrieval from multiple sources
-- country-specific housing and visa guidance
-- grounded responses with citations
-
 ## Suggested next upgrades
 
 - Add source filtering by country and topic
