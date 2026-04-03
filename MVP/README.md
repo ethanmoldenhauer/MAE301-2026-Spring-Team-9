@@ -2,12 +2,6 @@
 
 This project is a tutorial-style MVP for **NestGPT**, an agent that researches housing-abroad questions using live web sources and a language model.
 
-It follows the same progression as the professor's `agent_tutorial` repo:
-
-- `step5/step6` inspiration: prompt files plus a local web app
-- `step7` inspiration: retrieval-grounded answers instead of pure free-form chat
-- `step8` optional later: replace the simple web search/fetch layer with external tools or MCP servers
-
 ## What this MVP does
 
 - Accepts a relocation or housing question in a small local web app
