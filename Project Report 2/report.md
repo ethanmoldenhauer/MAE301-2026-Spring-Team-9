@@ -1,4 +1,4 @@
-# Phase 2 Report Draft
+# Phase 2 Report
 
 ## Objective And Current MVP Definition
 
@@ -52,8 +52,10 @@ Planned comparison method:
 
 - Search quality depends on general web results rather than official listing APIs
 - Housing rules can vary by neighborhood, landlord, and lease type
+- The agent provides the most common answers to questions rather than extremely specific "house-by-house" information
 - The system does not yet rank actual listing inventory
 - Source freshness and extraction quality can vary between websites
+- Users are still encouraged to self verify any information provided by NestGPT, though how many truly will is hard to say
 
 ## Plan For Phase 3
 
@@ -61,3 +63,4 @@ Planned comparison method:
 - Improve source prioritization for official government and city pages
 - Add saved evaluation outputs and screenshots as artifacts
 - Expand support for multilingual landlord communication
+- Direct users toward potential housing listings (possible but not likely)
