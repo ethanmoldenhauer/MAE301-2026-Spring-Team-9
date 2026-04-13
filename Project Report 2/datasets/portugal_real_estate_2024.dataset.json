@@ -1,0 +1,19 @@
+{
+  "name": "Portugal House Purchase Benchmarks",
+  "source": "NestGPT curated benchmark dataset",
+  "source_url": "https://www2.gov.pt/en/migrantes-viver-e-trabalhar-em-portugal/migrantes-vistos-e-autorizacoes-para-entrar-e-viver-em-portugal",
+  "license": "Derived benchmark metadata for in-app guidance; verify upstream source terms before redistribution",
+  "description": "City-specific house-purchase benchmarks for Lisbon, Porto, and Faro. This dataset is intentionally limited to townhouses, villas, and detached homes and excludes apartment purchases, whole-building deals, and land-only plots.",
+  "dataset_type": "purchase",
+  "market_type": "sale",
+  "countries": ["Portugal"],
+  "cities": ["Lisbon", "Porto", "Faro"],
+  "keywords": ["buy", "purchase", "home", "house", "villa", "townhouse", "sale"],
+  "preprocessing": [
+    "Built a compact benchmark dataset from current Portugal city purchase guides already retrievable by NestGPT",
+    "Kept only house-oriented purchase examples for supported cities",
+    "Excluded apartment purchases, whole buildings, and land-only transactions",
+    "Stored a small prompt-sized sample with notes and upstream source URLs per record"
+  ],
+  "data_file": "portugal_real_estate_2024_sample.json"
+}

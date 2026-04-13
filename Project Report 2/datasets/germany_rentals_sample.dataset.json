@@ -1,0 +1,19 @@
+{
+  "name": "Germany Apartment Rent Benchmarks",
+  "source": "NestGPT curated benchmark dataset",
+  "source_url": "https://www.make-it-in-germany.com/en/living-in-germany/housing-mobility/housing-registration",
+  "license": "Derived benchmark metadata for in-app guidance; verify upstream source terms before redistribution",
+  "description": "City-specific long-term apartment-rent benchmarks for Berlin, Munich, and Hamburg. This dataset is intentionally limited to apartment rentals and excludes house rentals, temporary stays, and non-residential inventory.",
+  "dataset_type": "rental",
+  "market_type": "rent",
+  "countries": ["Germany"],
+  "cities": ["Berlin", "Munich", "Hamburg"],
+  "keywords": ["rent", "rental", "housing", "budget", "apartment", "lease"],
+  "preprocessing": [
+    "Built a compact benchmark dataset from city rent guides already cited by NestGPT",
+    "Kept only one-bedroom apartment-style monthly rent benchmarks for supported cities",
+    "Excluded house rentals, whole-building listings, land, and non-residential inventory",
+    "Stored a small prompt-sized sample with notes and upstream source URLs per record"
+  ],
+  "data_file": "germany_rentals_sample.json"
+}

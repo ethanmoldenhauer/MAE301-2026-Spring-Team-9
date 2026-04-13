@@ -1,0 +1,19 @@
+{
+  "name": "Japan Apartment Rent Benchmarks",
+  "source": "NestGPT curated benchmark dataset",
+  "source_url": "https://www.mofa.go.jp/j_info/visit/visa/index.html",
+  "license": "Derived benchmark metadata for in-app guidance; verify upstream source terms before redistribution",
+  "description": "City-specific long-term apartment-rent benchmarks for Tokyo, Osaka, and Kyoto. This dataset is intentionally limited to apartment rentals and excludes detached-house rentals, temporary stays, and hotel-style accommodation.",
+  "dataset_type": "rental",
+  "market_type": "rent",
+  "countries": ["Japan"],
+  "cities": ["Tokyo", "Osaka", "Kyoto"],
+  "keywords": ["rent", "rental", "apartment", "lease", "landlord", "housing", "budget"],
+  "preprocessing": [
+    "Built a compact benchmark dataset from current Japan city rent guides already cited by NestGPT",
+    "Kept only one-bedroom apartment-style monthly rent benchmarks for supported cities",
+    "Excluded house rentals, short-term stays, and non-residential inventory",
+    "Stored a small prompt-sized sample with notes and upstream source URLs per record"
+  ],
+  "data_file": "japan_apartment_rent_benchmarks.json"
+}

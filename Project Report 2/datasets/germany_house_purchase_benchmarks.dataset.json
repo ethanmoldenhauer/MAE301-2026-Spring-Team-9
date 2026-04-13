@@ -1,0 +1,19 @@
+{
+  "name": "Germany House Purchase Benchmarks",
+  "source": "NestGPT curated benchmark dataset",
+  "source_url": "https://www.make-it-in-germany.com/en/living-in-germany/housing-mobility/housing-registration",
+  "license": "Derived benchmark metadata for in-app guidance; verify upstream source terms before redistribution",
+  "description": "City-specific house-purchase benchmarks for Berlin, Munich, and Hamburg. This dataset is intentionally limited to townhouses, row houses, and detached homes and excludes apartment purchases, whole-building deals, and land-only plots.",
+  "dataset_type": "purchase",
+  "market_type": "sale",
+  "countries": ["Germany"],
+  "cities": ["Berlin", "Munich", "Hamburg"],
+  "keywords": ["buy", "purchase", "home", "house", "townhouse", "sale", "closing costs"],
+  "preprocessing": [
+    "Built a compact benchmark dataset from current Germany city purchase guides already retrievable by NestGPT",
+    "Kept only house-oriented purchase examples for supported cities",
+    "Excluded apartment purchases, whole buildings, and land-only transactions",
+    "Stored a small prompt-sized sample with notes and upstream source URLs per record"
+  ],
+  "data_file": "germany_house_purchase_benchmarks.json"
+}

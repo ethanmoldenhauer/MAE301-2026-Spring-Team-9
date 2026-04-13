@@ -1,0 +1,19 @@
+{
+  "name": "Japan House Purchase Benchmarks",
+  "source": "NestGPT curated benchmark dataset",
+  "source_url": "https://www.mofa.go.jp/j_info/visit/visa/index.html",
+  "license": "Derived benchmark metadata for in-app guidance; verify upstream source terms before redistribution",
+  "description": "City-specific house-purchase benchmarks for Tokyo, Osaka, and Kyoto. This dataset is intentionally limited to detached houses and townhouse-style homes and excludes apartment purchases, whole-building deals, and land-only plots.",
+  "dataset_type": "purchase",
+  "market_type": "transaction",
+  "countries": ["Japan"],
+  "cities": ["Tokyo", "Kyoto", "Osaka"],
+  "keywords": ["buy", "purchase", "home", "house", "detached", "townhouse", "sale"],
+  "preprocessing": [
+    "Built a compact benchmark dataset from current Japan city purchase guides and house-oriented examples",
+    "Kept only detached-house or city-home style purchase examples for supported cities",
+    "Excluded apartment purchases, whole buildings, and land-only transactions",
+    "Stored a small prompt-sized sample with notes and upstream source URLs per record"
+  ],
+  "data_file": "japan_property_transactions_sample.json"
+}
