@@ -116,26 +116,6 @@ Current Python dependencies:
 - `requests`
 - `beautifulsoup4`
 
-## Notes for GitHub submission
-
-Recommended files to include:
-- `datasets/`
-- `AGENT.md`
-- `SKILL.md`
-- `app_template.html`
-- `nestgpt_agent.py`
-- `README.md`
-- `requirements.txt`
-- `NestGPT-Logo.png` if you want the asset in the repo
-- optional: `report.md`
-- optional: `benchmark_cases.md`
-
-Do not include:
-- `__pycache__/`
-- `venv/` or `.venv/`
-- API keys
-- `.env` files with secrets
-
 ## Limitations
 
 - Some guidance uses curated benchmark data rather than live listing feeds
