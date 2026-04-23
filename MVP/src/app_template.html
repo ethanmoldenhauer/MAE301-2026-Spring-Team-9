@@ -1,0 +1,2249 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NestGPT</title>
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --paper: rgba(255, 252, 247, 0.9);
+      --panel: #fffdfa;
+      --panel-strong: #f8f1e5;
+      --ink: #1e2b29;
+      --muted: #61706c;
+      --accent: #16615b;
+      --accent-strong: #0f4e49;
+      --accent-soft: rgba(22, 97, 91, 0.1);
+      --highlight: #d97a43;
+      --highlight-soft: rgba(217, 122, 67, 0.12);
+      --border: rgba(56, 78, 73, 0.16);
+      --shadow: 0 24px 70px rgba(31, 40, 37, 0.12);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      color-scheme: light;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(217, 122, 67, 0.16), transparent 28%),
+        radial-gradient(circle at 85% 18%, rgba(22, 97, 91, 0.18), transparent 22%),
+        linear-gradient(180deg, #f7f2e9 0%, #efe8dc 100%);
+    }
+    .shell {
+      max-width: 1580px;
+      margin: 0 auto;
+      padding: 32px 28px 60px;
+    }
+    .frame {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-xl);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+    .frame::before,
+    .frame::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(6px);
+    }
+    .frame::before {
+      width: 260px;
+      height: 260px;
+      top: -120px;
+      right: -70px;
+      background: rgba(22, 97, 91, 0.08);
+    }
+    .frame::after {
+      width: 220px;
+      height: 220px;
+      bottom: -120px;
+      left: -80px;
+      background: rgba(217, 122, 67, 0.08);
+    }
+    .layout {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(360px, 500px) minmax(0, 1fr);
+      gap: 0;
+    }
+    .sidebar,
+    .content {
+      padding: 36px;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, rgba(249, 243, 233, 0.92), rgba(247, 238, 224, 0.78));
+      border-right: 1px solid var(--border);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--border);
+      color: var(--accent-strong);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 18px 0 10px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+    }
+    .lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.6;
+    }
+    .summary-card,
+    .mini-card,
+    .results-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.78);
+    }
+    .summary-card {
+      padding: 20px;
+    }
+    .summary-card strong,
+    .section-title,
+    .results-title {
+      display: block;
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .feature-list {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .feature-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    .feature-list li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 6px;
+      flex: 0 0 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--highlight));
+    }
+    .mini-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .location-card {
+      padding: 18px;
+      overflow: hidden;
+    }
+    .location-copy {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .location-copy p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.94rem;
+    }
+    .location-badge {
+      flex: 0 0 auto;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--highlight-soft);
+      color: #9a5226;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .location-shell {
+      position: relative;
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(22, 97, 91, 0.11), transparent 30%),
+        radial-gradient(circle at 85% 78%, rgba(217, 122, 67, 0.14), transparent 28%),
+        linear-gradient(180deg, #f8f4ec 0%, #fffdfa 100%);
+      border: 1px solid rgba(51, 71, 67, 0.1);
+    }
+    .location-hero {
+      display: grid;
+      gap: 14px;
+      min-height: 250px;
+    }
+    .location-summary {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 253, 249, 0.9);
+      border: 1px solid rgba(51, 71, 67, 0.1);
+      box-shadow: 0 12px 28px rgba(32, 48, 44, 0.07);
+    }
+    .country-mark {
+      width: 82px;
+      height: 82px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 2.1rem;
+      background: linear-gradient(135deg, rgba(22, 97, 91, 0.12), rgba(217, 122, 67, 0.16));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+      transition: transform 220ms ease, background 220ms ease;
+    }
+    .location-summary.is-japan .country-mark {
+      background: linear-gradient(135deg, rgba(231, 80, 90, 0.14), rgba(255, 255, 255, 0.78));
+    }
+    .location-summary.is-germany .country-mark {
+      background: linear-gradient(135deg, rgba(20, 20, 24, 0.12), rgba(220, 178, 71, 0.2));
+    }
+    .location-summary.is-portugal .country-mark {
+      background: linear-gradient(135deg, rgba(24, 116, 77, 0.16), rgba(214, 72, 54, 0.16));
+    }
+    .location-text {
+      display: grid;
+      gap: 4px;
+    }
+    .location-eyebrow {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .location-city {
+      font-size: 1.8rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .location-country {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .location-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .location-tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(22, 97, 91, 0.08);
+      color: var(--accent-strong);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .city-list {
+      display: grid;
+      gap: 10px;
+    }
+    .city-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(51, 71, 67, 0.08);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+    .city-option.active {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.95);
+      border-color: rgba(217, 122, 67, 0.3);
+      box-shadow: 0 10px 24px rgba(217, 122, 67, 0.12);
+    }
+    .city-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .city-bullet {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      background: rgba(22, 97, 91, 0.28);
+      box-shadow: 0 0 0 6px rgba(22, 97, 91, 0.06);
+      transition: background 180ms ease, box-shadow 180ms ease;
+    }
+    .city-option.active .city-bullet {
+      background: var(--highlight);
+      box-shadow: 0 0 0 8px rgba(217, 122, 67, 0.12);
+    }
+    .city-name {
+      font-weight: 700;
+    }
+    .city-state {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .mini-card {
+      padding: 16px;
+    }
+    .mini-card p,
+    .summary-card p,
+    .subtle,
+    .field-hint,
+    .status-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .content {
+      display: grid;
+      gap: 24px;
+      background: rgba(255, 253, 250, 0.74);
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .toolbar-copy h2 {
+      margin: 0 0 6px;
+      font-size: 1.4rem;
+    }
+    .toolbar-copy p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 60ch;
+      line-height: 1.5;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-weight: 700;
+      border: 1px solid rgba(22, 97, 91, 0.14);
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--highlight);
+      box-shadow: 0 0 0 6px rgba(217, 122, 67, 0.12);
+    }
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: 0 16px 40px rgba(33, 48, 44, 0.06);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 28px 30px 0;
+    }
+    .panel-headline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .panel-body {
+      padding: 26px 30px 30px;
+    }
+    .panel-toggle {
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(22, 97, 91, 0.14);
+      background: rgba(22, 97, 91, 0.06);
+      color: var(--accent-strong);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .panel-collapsed-note {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(22, 97, 91, 0.06);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .panel.is-collapsed .panel-body {
+      display: none;
+    }
+    .panel.is-collapsed .panel-collapsed-note {
+      display: block;
+    }
+    .section-title {
+      margin-bottom: 6px;
+    }
+    .section-intro {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+      align-items: start;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 118px;
+    }
+    .field.full {
+      grid-column: 1 / -1;
+      min-height: unset;
+    }
+    label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      min-height: 58px;
+      display: flex;
+      align-items: flex-end;
+      line-height: 1.15;
+    }
+    .field-hint {
+      font-size: 0.88rem;
+      min-height: 38px;
+      display: flex;
+      align-items: flex-start;
+    }
+    .field-hint.dynamic {
+      min-height: unset;
+    }
+    .budget-feedback {
+      display: none;
+      align-items: start;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(22, 97, 91, 0.08);
+      border: 1px solid rgba(22, 97, 91, 0.12);
+      color: var(--accent-strong);
+      font-size: 0.88rem;
+      line-height: 1.45;
+      width: 100%;
+      flex-wrap: nowrap;
+    }
+    .budget-feedback.active {
+      display: flex;
+      flex-direction: column;
+    }
+    .budget-badge {
+      align-self: flex-start;
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(22, 97, 91, 0.14);
+      white-space: nowrap;
+    }
+    #budgetFeedbackText {
+      display: block;
+      width: 100%;
+    }
+    .budget-feedback.good {
+      background: rgba(43, 132, 74, 0.08);
+      border-color: rgba(43, 132, 74, 0.16);
+      color: #22633a;
+    }
+    .budget-feedback.good .budget-badge {
+      background: rgba(43, 132, 74, 0.16);
+    }
+    .budget-feedback.stretch {
+      background: rgba(217, 122, 67, 0.09);
+      border-color: rgba(217, 122, 67, 0.16);
+      color: #8d532d;
+    }
+    .budget-feedback.stretch .budget-badge {
+      background: rgba(217, 122, 67, 0.14);
+    }
+    .budget-feedback.low {
+      background: rgba(186, 67, 67, 0.08);
+      border-color: rgba(186, 67, 67, 0.16);
+      color: #8f3b3b;
+    }
+    .budget-feedback.low .budget-badge {
+      background: rgba(186, 67, 67, 0.16);
+    }
+    .budget-feedback.above {
+      background: rgba(58, 114, 210, 0.08);
+      border-color: rgba(58, 114, 210, 0.16);
+      color: #2d5ca8;
+    }
+    .budget-feedback.above .budget-badge {
+      background: rgba(58, 114, 210, 0.16);
+    }
+    select,
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(51, 71, 67, 0.16);
+      border-radius: var(--radius-md);
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    }
+    select,
+    input {
+      min-height: 50px;
+      padding: 12px 14px;
+    }
+    textarea {
+      min-height: 170px;
+      padding: 14px 16px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    select:focus,
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: rgba(22, 97, 91, 0.58);
+      box-shadow: 0 0 0 4px rgba(22, 97, 91, 0.11);
+      transform: translateY(-1px);
+    }
+    .question-shell {
+      display: grid;
+      gap: 14px;
+    }
+    .assist-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(51, 71, 67, 0.1);
+      display: grid;
+      gap: 14px;
+    }
+    .assist-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .assist-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .assist-copy {
+      margin: 4px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+    .tertiary {
+      background: rgba(22, 97, 91, 0.08);
+      color: var(--accent-strong);
+      border: 1px solid rgba(22, 97, 91, 0.12);
+    }
+    .question-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    .question-placeholder {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .quick-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .chip {
+      border: 1px solid rgba(22, 97, 91, 0.14);
+      background: rgba(22, 97, 91, 0.05);
+      color: var(--accent-strong);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+      transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+    .chip:hover,
+    .chip:focus {
+      outline: none;
+      background: rgba(22, 97, 91, 0.1);
+      border-color: rgba(22, 97, 91, 0.26);
+      transform: translateY(-1px);
+    }
+    .actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+    }
+    button:hover,
+    button:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(17, 32, 29, 0.12);
+      outline: none;
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: wait;
+      transform: none;
+      box-shadow: none;
+    }
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: white;
+    }
+    .secondary {
+      background: var(--panel-strong);
+      color: var(--ink);
+      border: 1px solid rgba(51, 71, 67, 0.1);
+    }
+    .results-card {
+      padding: 26px;
+      position: static;
+    }
+    .results-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .results-title {
+      margin-bottom: 6px;
+    }
+    .results-subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .status {
+      margin: 0 0 16px;
+      display: grid;
+      gap: 6px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(217, 122, 67, 0.08), rgba(22, 97, 91, 0.08));
+      border: 1px solid rgba(51, 71, 67, 0.12);
+      min-height: 74px;
+    }
+    .listing-card {
+      display: none;
+      margin: 0 0 16px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(22, 97, 91, 0.08), rgba(22, 97, 91, 0.03));
+      border: 1px solid rgba(22, 97, 91, 0.16);
+      gap: 14px;
+    }
+    .listing-card.is-visible {
+      display: grid;
+    }
+    .listing-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .listing-eyebrow {
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-strong);
+      margin-bottom: 6px;
+    }
+    .listing-title {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .listing-chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(22, 97, 91, 0.12);
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .listing-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .listing-meta span {
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(51, 71, 67, 0.09);
+      font-size: 0.92rem;
+      color: var(--ink);
+    }
+    .listing-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 140ms ease, box-shadow 140ms ease;
+      box-shadow: 0 12px 24px rgba(22, 97, 91, 0.18);
+    }
+    .listing-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(22, 97, 91, 0.22);
+    }
+    .listing-note {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .assistant-grid {
+      display: grid;
+      gap: 16px;
+      margin: 0 0 18px;
+    }
+    .assistant-card {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(51, 71, 67, 0.1);
+    }
+    .assistant-card h3 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+      line-height: 1.35;
+    }
+    .assistant-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .verdict-line {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .verdict-note {
+      margin-top: 8px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .mini-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .mini-badge {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(22, 97, 91, 0.1);
+      color: var(--accent-strong);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .score-grid,
+    .compare-grid,
+    .plan-grid,
+    .scenario-grid,
+    .source-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .score-row {
+      display: grid;
+      gap: 8px;
+    }
+    .score-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .score-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(51, 71, 67, 0.09);
+      overflow: hidden;
+    }
+    .score-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #d97a43, #16615b);
+    }
+    .score-note {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .compare-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .compare-card,
+    .plan-card,
+    .scenario-card,
+    .source-card {
+      padding: 14px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid rgba(51, 71, 67, 0.09);
+    }
+    .compare-card strong,
+    .plan-card strong,
+    .scenario-card strong,
+    .source-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .compare-card p,
+    .plan-card p,
+    .scenario-card p,
+    .source-card p {
+      font-size: 0.92rem;
+    }
+    .compare-list,
+    .scenario-list,
+    .source-list {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+    .compare-list li,
+    .scenario-list li,
+    .source-list li {
+      margin-bottom: 6px;
+    }
+    .whatif-actions,
+    .scenario-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .micro-button {
+      padding: 9px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(22, 97, 91, 0.14);
+      background: rgba(22, 97, 91, 0.05);
+      color: var(--accent-strong);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .micro-button:hover {
+      background: rgba(22, 97, 91, 0.09);
+    }
+    .message-builder {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .message-builder textarea {
+      min-height: 130px;
+      border-radius: 14px;
+      border: 1px solid rgba(51, 71, 67, 0.12);
+      padding: 14px 16px;
+      font: inherit;
+      line-height: 1.55;
+      resize: vertical;
+      background: #fff;
+      color: var(--ink);
+    }
+    .assistant-empty {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    @media (max-width: 900px) {
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .status-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-strong);
+    }
+    .results-stack {
+      margin: 0;
+      min-height: 180px;
+      display: grid;
+      gap: 12px;
+    }
+    .result-section {
+      border: 1px solid rgba(51, 71, 67, 0.1);
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .result-section summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 16px 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .result-section summary::-webkit-details-marker {
+      display: none;
+    }
+    .result-section summary::after {
+      content: "+";
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+    .result-section[open] summary::after {
+      content: "-";
+    }
+    .result-body {
+      padding: 0 18px 18px;
+      color: #1f2a29;
+      line-height: 1.58;
+    }
+    .result-body p {
+      margin: 0 0 10px;
+    }
+    .result-body ul {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+    .raw-output {
+      min-height: 180px;
+      padding: 22px;
+      border-radius: var(--radius-md);
+      background: #fff;
+      border: 1px solid rgba(51, 71, 67, 0.1);
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+      line-height: 1.58;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 0.94rem;
+      color: #1f2a29;
+    }
+    .empty-state {
+      color: var(--muted);
+    }
+    @media (min-width: 1500px) {
+      .layout {
+        grid-template-columns: minmax(390px, 540px) minmax(0, 1fr);
+      }
+      .sidebar,
+      .content {
+        padding: 42px;
+      }
+      .content-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .panel-header {
+        padding: 32px 34px 0;
+      }
+      .panel-body {
+        padding: 28px 34px 34px;
+      }
+      .results-card {
+        padding: 30px;
+      }
+      .results-stack,
+      .raw-output {
+        min-height: 220px;
+      }
+    }
+    @media (max-width: 1080px) {
+      .layout,
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+    @media (max-width: 720px) {
+      .shell {
+        padding: 18px 14px 36px;
+      }
+      .sidebar,
+      .content,
+      .panel-body,
+      .panel-header,
+      .results-card {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .field {
+        min-height: unset;
+      }
+      .field-hint {
+        min-height: unset;
+      }
+      .toolbar {
+        align-items: flex-start;
+      }
+      .results-head {
+        flex-direction: column;
+      }
+      .results-stack,
+      .raw-output {
+        min-height: 160px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <main class="frame">
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="eyebrow">Housing research assistant</div>
+          <h1>Move with clarity, not clutter.</h1>
+          <p class="lead">Plan a move abroad with a calmer, more guided workflow. NestGPT helps you compare cities, understand likely rental hurdles, and turn web research into practical next steps.</p>
+
+          <section class="summary-card">
+            <strong>What this app is best at</strong>
+            <p>Use it when you want a clearer starting point for renting abroad, especially if you are juggling budgets, paperwork, move timing, and location tradeoffs.</p>
+            <ul class="feature-list">
+              <li>Compare supported cities in Japan, Germany, and Portugal.</li>
+              <li>See how your budget and move reason affect the advice.</li>
+              <li>Choose between fast baseline output and source-backed research mode.</li>
+            </ul>
+          </section>
+
+          <div class="mini-grid">
+            <section class="mini-card location-card">
+              <div class="location-copy">
+                <div>
+                  <strong class="section-title">Location preview</strong>
+                  <p>See the selected city and country at a glance while you compare options.</p>
+                </div>
+                <div class="location-badge">Live focus</div>
+              </div>
+              <div class="location-shell">
+                <div class="location-hero">
+                  <div class="location-summary is-japan" id="locationSummary">
+                    <div class="country-mark" id="countryMark">JP</div>
+                    <div class="location-text">
+                      <div class="location-eyebrow">Selected destination</div>
+                      <div class="location-city" id="locationCity">Tokyo</div>
+                      <div class="location-country" id="locationCountry">Japan</div>
+                      <div class="location-meta">
+                        <span class="location-tag" id="locationRegion">East Asia</span>
+                        <span class="location-tag" id="locationType">3 supported cities</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="city-list" id="cityList">
+                    <div class="city-option active" data-city-card="Tokyo">
+                      <div class="city-left">
+                        <span class="city-bullet"></span>
+                        <div>
+                          <div class="city-name">Tokyo</div>
+                          <div class="city-state">Japan</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="city-option" data-city-card="Osaka">
+                      <div class="city-left">
+                        <span class="city-bullet"></span>
+                        <div>
+                          <div class="city-name">Osaka</div>
+                          <div class="city-state">Japan</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="city-option" data-city-card="Kyoto">
+                      <div class="city-left">
+                        <span class="city-bullet"></span>
+                        <div>
+                          <div class="city-name">Kyoto</div>
+                          <div class="city-state">Japan</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="mini-card">
+              <strong class="section-title">Quick flow</strong>
+              <p>Pick a city, fill in the essentials, ask a focused question, and review the answer in the panel on the right.</p>
+            </section>
+            <section class="mini-card">
+              <strong class="section-title">Supported focus</strong>
+              <p>Keeping the MVP narrow helps the recommendations stay more structured and useful instead of overly generic.</p>
+            </section>
+          </div>
+        </aside>
+
+        <section class="content">
+          <div class="toolbar">
+            <div class="toolbar-copy">
+              <h2>Build your relocation brief</h2>
+              <p>Start with the practical details below. The more specific your question is, the more actionable the result will feel.</p>
+            </div>
+            <div class="status-pill">
+              <span class="status-dot"></span>
+              <span>Ready to research</span>
+            </div>
+          </div>
+
+          <div class="content-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div class="panel-headline">
+                  <div>
+                    <strong class="section-title">Trip details</strong>
+                    <p class="section-intro">These inputs shape the housing guidance, expected rent context, and the type of documents or risks NestGPT highlights.</p>
+                  </div>
+                  <button class="panel-toggle" id="detailsToggleButton" type="button">Collapse details</button>
+                </div>
+                <div class="panel-collapsed-note" id="detailsSummary">Trip details are collapsed. Reopen them any time to adjust your setup.</div>
+              </div>
+              <div class="panel-body">
+                <div class="grid">
+                  <div class="field">
+                    <label for="country">Country</label>
+                    <select id="country"></select>
+                  </div>
+                  <div class="field">
+                    <label for="city">City</label>
+                    <select id="city"></select>
+                  </div>
+                  <div class="field">
+                    <label for="budget">Monthly housing budget</label>
+                    <input id="budget" type="text" inputmode="decimal" placeholder="Example: 1400">
+                    <p class="field-hint">Enter a rough monthly amount, even if you are still estimating.</p>
+                    <div class="budget-feedback" id="budgetFeedback">
+                      <span class="budget-badge" id="budgetBadge">Fit</span>
+                      <span id="budgetFeedbackText"></span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="currency">Currency</label>
+                    <select id="currency">
+                      <option value="EUR">EUR</option>
+                      <option value="JPY">JPY</option>
+                      <option value="USD">USD</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="reason">Reason for relocating</label>
+                    <select id="reason">
+                      <option value="Work">Work</option>
+                      <option value="Study">Study</option>
+                      <option value="Remote work">Remote work</option>
+                      <option value="Family">Family</option>
+                      <option value="Long-term travel">Long-term travel</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="timeline">Planned move timeline</label>
+                    <select id="timeline">
+                      <option value="Within 1 month">Within 1 month</option>
+                      <option value="1 to 3 months">1 to 3 months</option>
+                      <option value="3 to 6 months">3 to 6 months</option>
+                      <option value="6 to 12 months">6 to 12 months</option>
+                      <option value="More than 1 year">More than 1 year</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="nationality">Nationality or passport</label>
+                    <select id="nationality">
+                      <option value="">Select passport profile</option>
+                      <option value="EU/EEA/Swiss passport">EU/EEA/Swiss passport</option>
+                      <option value="U.S./Canada/UK/Australia/New Zealand passport">U.S./Canada/UK/Australia/New Zealand passport</option>
+                      <option value="Japan passport">Japan passport</option>
+                      <option value="Brazil/CPLP passport">Brazil/CPLP passport</option>
+                      <option value="Other non-EU passport">Other non-EU passport</option>
+                    </select>
+                    <p class="field-hint">This uses broad passport profiles to estimate likely visa and registration friction. It is a planning aid, not legal advice.</p>
+                  </div>
+                  <div class="field">
+                    <label for="mode">Answer mode</label>
+                    <select id="mode">
+                      <option value="research">NestGPT research mode</option>
+                      <option value="baseline">Baseline AI mode</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <strong class="section-title">Specific question</strong>
+                <p class="section-intro">Keep your actual question visible while you review the answer and ask follow-ups.</p>
+              </div>
+              <div class="panel-body">
+                <label for="message">Specific question or concern</label>
+                <div class="question-shell">
+                  <textarea id="message" placeholder="Example: I want to rent before I arrive. What documents do landlords usually ask for, and what scams should I watch out for?"></textarea>
+                  <div class="quick-prompts">
+                    <button class="chip" type="button" data-prompt="I want to rent before I arrive. What documents do landlords usually ask for, and what scams should I watch out for?">Pre-arrival renting risks</button>
+                    <button class="chip" type="button" data-prompt="Given my budget, which neighborhoods or compromises should I expect, and what is a realistic plan for the first 30 days after arrival?">Budget reality check</button>
+                    <button class="chip" type="button" data-prompt="What visa or registration steps are most likely to slow down my housing search, and how should I prepare for them?">Visa and registration blockers</button>
+                  </div>
+                  <div class="assist-card">
+                    <div class="assist-head">
+                      <div>
+                        <p class="assist-title">Landlord questions helper</p>
+                        <p class="assist-copy">Generate a short question list you can copy into messages to landlords or agents.</p>
+                      </div>
+                      <button class="tertiary" id="questionBuilderButton" type="button">Build questions</button>
+                    </div>
+                    <div id="questionBuilderOutput" class="question-placeholder">Choose a city and move profile, then build a tailored landlord question list.</div>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <button class="primary" id="askButton" type="button">Research my move</button>
+                  <button class="secondary" id="clearButton" type="button">Reset form</button>
+                </div>
+              </div>
+            </section>
+
+            <div id="output" class="results-stack empty-state">Fill in your relocation details, then ask NestGPT a focused question.</div>
+
+            <aside class="results-card" id="resultsCard">
+              <div class="results-head">
+                <div>
+                  <strong class="results-title">Results</strong>
+                  <p class="results-subtitle">Your answer will appear here with a more readable, report-style layout.</p>
+                </div>
+              </div>
+              <div class="status" id="statusBox">
+                <div class="status-label">Status</div>
+                <div class="status-copy" id="status">Ready when you are.</div>
+              </div>
+              <div class="listing-card" id="listingCard">
+                <div class="listing-top">
+                  <div>
+                    <div class="listing-eyebrow">Real listing</div>
+                    <p class="listing-title" id="listingTitle">No listing selected yet.</p>
+                  </div>
+                  <div class="listing-chip" id="listingType">Reference</div>
+                </div>
+                <div class="listing-meta">
+                  <span id="listingNeighborhood">Neighborhood</span>
+                  <span id="listingPrice">Price</span>
+                  <span id="listingSize">Size</span>
+                </div>
+                <a class="listing-link" id="listingLink" href="#" target="_blank" rel="noreferrer">Open listing</a>
+                <p class="listing-note" id="listingNote">Pulled from the current local city reference.</p>
+              </div>
+              <div class="assistant-grid">
+                <section class="assistant-card">
+                  <h3>Personalized move verdict</h3>
+                  <div id="verdictPanel" class="assistant-empty">Run a search to see the best-fit verdict for your profile.</div>
+                </section>
+                <section class="assistant-card">
+                  <h3>Risk scoring</h3>
+                  <div id="riskPanel" class="assistant-empty">Budget fit, paperwork friction, competition, and pre-arrival risk will show here.</div>
+                </section>
+                <section class="assistant-card">
+                  <h3>Compare cities</h3>
+                  <div id="comparePanel" class="assistant-empty">Compare the supported cities in your selected country at a glance.</div>
+                </section>
+                <section class="assistant-card">
+                  <h3>Action plan</h3>
+                  <div id="planPanel" class="assistant-empty">A step-by-step move plan will appear here.</div>
+                </section>
+                <section class="assistant-card">
+                  <h3>Landlord-ready message</h3>
+                  <div id="messagePanel" class="assistant-empty">Generate a landlord message you can send as-is or edit.</div>
+                </section>
+                <section class="assistant-card">
+                  <h3>What changes if...</h3>
+                  <p>Try quick scenario tweaks without retyping the whole form.</p>
+                  <div class="whatif-actions">
+                    <button class="micro-button" id="raiseBudgetButton" type="button">Raise budget 15%</button>
+                    <button class="micro-button" id="lowerBudgetButton" type="button">Lower budget 15%</button>
+                    <button class="micro-button" id="pushTimelineButton" type="button">Push timeline later</button>
+                    <button class="micro-button" id="switchCityButton" type="button">Switch to strongest city</button>
+                  </div>
+                </section>
+                <section class="assistant-card">
+                  <h3>Saved scenarios</h3>
+                  <p>Keep a few relocation setups side by side instead of re-building them from scratch.</p>
+                  <div class="scenario-actions">
+                    <button class="micro-button" id="saveScenarioButton" type="button">Save current scenario</button>
+                  </div>
+                  <div id="savedScenariosPanel" class="assistant-empty" style="margin-top: 12px;">No saved scenarios yet.</div>
+                </section>
+                <section class="assistant-card">
+                  <h3>Source insights</h3>
+                  <div id="sourceInsightsPanel" class="assistant-empty">After a search, this will explain what came from official sources, market guides, and local benchmark data.</div>
+                </section>
+              </div>
+              <div id="outputPlaceholder"></div>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script>
+    const locationOptions = {
+      "Japan": ["Tokyo", "Osaka", "Kyoto"],
+      "Germany": ["Berlin", "Munich", "Hamburg"],
+      "Portugal": ["Lisbon", "Porto", "Faro"]
+    };
+
+    const askButton = document.getElementById("askButton");
+    const clearButton = document.getElementById("clearButton");
+    const country = document.getElementById("country");
+    const city = document.getElementById("city");
+    const budget = document.getElementById("budget");
+    const currency = document.getElementById("currency");
+    const reason = document.getElementById("reason");
+    const timeline = document.getElementById("timeline");
+    const nationality = document.getElementById("nationality");
+    const mode = document.getElementById("mode");
+    const message = document.getElementById("message");
+    const output = document.getElementById("output");
+    const status = document.getElementById("status");
+    const chips = Array.from(document.querySelectorAll(".chip"));
+    const tripPanel = document.querySelector(".panel");
+    const resultsCard = document.getElementById("resultsCard");
+    const detailsToggleButton = document.getElementById("detailsToggleButton");
+    const detailsSummary = document.getElementById("detailsSummary");
+    const budgetFeedback = document.getElementById("budgetFeedback");
+    const budgetBadge = document.getElementById("budgetBadge");
+    const budgetFeedbackText = document.getElementById("budgetFeedbackText");
+    const questionBuilderButton = document.getElementById("questionBuilderButton");
+    const questionBuilderOutput = document.getElementById("questionBuilderOutput");
+    const listingCard = document.getElementById("listingCard");
+    const listingTitle = document.getElementById("listingTitle");
+    const listingType = document.getElementById("listingType");
+    const listingNeighborhood = document.getElementById("listingNeighborhood");
+    const listingPrice = document.getElementById("listingPrice");
+    const listingSize = document.getElementById("listingSize");
+    const listingLink = document.getElementById("listingLink");
+    const listingNote = document.getElementById("listingNote");
+    const verdictPanel = document.getElementById("verdictPanel");
+    const riskPanel = document.getElementById("riskPanel");
+    const comparePanel = document.getElementById("comparePanel");
+    const planPanel = document.getElementById("planPanel");
+    const messagePanel = document.getElementById("messagePanel");
+    const sourceInsightsPanel = document.getElementById("sourceInsightsPanel");
+    const savedScenariosPanel = document.getElementById("savedScenariosPanel");
+    const raiseBudgetButton = document.getElementById("raiseBudgetButton");
+    const lowerBudgetButton = document.getElementById("lowerBudgetButton");
+    const pushTimelineButton = document.getElementById("pushTimelineButton");
+    const switchCityButton = document.getElementById("switchCityButton");
+    const saveScenarioButton = document.getElementById("saveScenarioButton");
+    const locationSummary = document.getElementById("locationSummary");
+    const countryMark = document.getElementById("countryMark");
+    const locationCity = document.getElementById("locationCity");
+    const locationCountry = document.getElementById("locationCountry");
+    const locationRegion = document.getElementById("locationRegion");
+    const locationType = document.getElementById("locationType");
+    const cityList = document.getElementById("cityList");
+    const locationMeta = {
+      Japan: { mark: "JP", region: "East Asia", className: "is-japan" },
+      Germany: { mark: "DE", region: "Central Europe", className: "is-germany" },
+      Portugal: { mark: "PT", region: "Southern Europe", className: "is-portugal" }
+    };
+    const cityBudgetMeta = {
+      Lisbon: { low: 1300, high: 1800, currency: "EUR" },
+      Porto: { low: 900, high: 1200, currency: "EUR" },
+      Faro: { low: 750, high: 1150, currency: "EUR" },
+      Berlin: { low: 750, high: 1400, currency: "EUR" },
+      Munich: { low: 850, high: 1500, currency: "EUR" },
+      Hamburg: { low: 500, high: 850, currency: "EUR" },
+      Tokyo: { low: 165000, high: 230000, currency: "JPY" },
+      Osaka: { low: 65000, high: 135000, currency: "JPY" },
+      Kyoto: { low: 55000, high: 100000, currency: "JPY" }
+    };
+    const competitionMeta = {
+      Lisbon: 74,
+      Porto: 63,
+      Faro: 57,
+      Berlin: 84,
+      Munich: 88,
+      Hamburg: 69,
+      Tokyo: 71,
+      Osaka: 56,
+      Kyoto: 60
+    };
+    const paperworkMeta = {
+      Portugal: 54,
+      Germany: 78,
+      Japan: 66
+    };
+    const passportEffectMeta = {
+      Portugal: {
+        "EU/EEA/Swiss passport": { paperwork: -26, preArrival: -16 },
+        "U.S./Canada/UK/Australia/New Zealand passport": { paperwork: -8, preArrival: -5 },
+        "Japan passport": { paperwork: -4, preArrival: -3 },
+        "Brazil/CPLP passport": { paperwork: -18, preArrival: -10 },
+        "Other non-EU passport": { paperwork: 10, preArrival: 10 }
+      },
+      Germany: {
+        "EU/EEA/Swiss passport": { paperwork: -28, preArrival: -14 },
+        "U.S./Canada/UK/Australia/New Zealand passport": { paperwork: -7, preArrival: -4 },
+        "Japan passport": { paperwork: -6, preArrival: -3 },
+        "Brazil/CPLP passport": { paperwork: 4, preArrival: 5 },
+        "Other non-EU passport": { paperwork: 12, preArrival: 10 }
+      },
+      Japan: {
+        "EU/EEA/Swiss passport": { paperwork: 2, preArrival: 3 },
+        "U.S./Canada/UK/Australia/New Zealand passport": { paperwork: -4, preArrival: -4 },
+        "Japan passport": { paperwork: -42, preArrival: -24 },
+        "Brazil/CPLP passport": { paperwork: 4, preArrival: 4 },
+        "Other non-EU passport": { paperwork: 10, preArrival: 10 }
+      }
+    };
+    const timelineOrder = [
+      "Within 1 month",
+      "1 to 3 months",
+      "3 to 6 months",
+      "6 to 12 months",
+      "More than 1 year"
+    ];
+    const scenarioStorageKey = "nestgpt_saved_scenarios_v1";
+    const resultHeadings = [
+      "Direct answer",
+      "What matters most",
+      "Realistic next steps",
+      "Watch-outs",
+      "Recommended next steps",
+      "Sources used:",
+      "Datasets used:",
+      "Short answer",
+      "Housing and rental notes",
+      "Housing and purchase notes",
+      "Visa or residency notes",
+      "Costs or market notes",
+      "Risks or unknowns"
+    ];
+
+    function getProfile() {
+      return {
+        country: country.value,
+        city: city.value,
+        budget: budget.value.trim(),
+        budgetAmount: parseBudgetValue(budget.value),
+        currency: currency.value,
+        reason: reason.value,
+        timeline: timeline.value,
+        nationality: nationality.value,
+        mode: mode.value,
+        message: message.value.trim()
+      };
+    }
+
+    function getBudgetStateForCity(cityName, amount, currencyCode) {
+      const meta = cityBudgetMeta[cityName];
+      if (!meta || amount === null || currencyCode !== meta.currency) {
+        return { label: "Unknown", score: 50, note: "Budget match is unclear with the current currency." };
+      }
+      if (amount < meta.low * 0.65) {
+        return { label: "Too low", score: 18, note: `Budget is far below the typical ${cityName} range.` };
+      }
+      if (amount < meta.low) {
+        return { label: "Stretch", score: 42, note: `Budget is below the typical ${cityName} range and likely needs tradeoffs.` };
+      }
+      if (amount <= meta.high) {
+        return { label: "Good fit", score: 78, note: `Budget sits inside the typical ${cityName} range.` };
+      }
+      return { label: "Above range", score: 88, note: `Budget sits above the typical ${cityName} range and gives more flexibility.` };
+    }
+
+    function getRiskScores(profile, cityName = profile.city) {
+      const budgetState = getBudgetStateForCity(cityName, profile.budgetAmount, profile.currency);
+      const budgetFit = budgetState.score;
+      const passportEffect =
+        (passportEffectMeta[profile.country] && passportEffectMeta[profile.country][profile.nationality]) ||
+        { paperwork: 6, preArrival: 6 };
+      const paperworkDifficulty = Math.max(8, Math.min(95, (paperworkMeta[profile.country] || 60) + passportEffect.paperwork + (profile.nationality ? 0 : 6)));
+      const competition = competitionMeta[cityName] || 60;
+      const mentionsBeforeArrival = /before i arrive|before arrival|before arriving|pre-arrival|pre arrival/i.test(profile.message);
+      const timelineBoost = profile.timeline === "Within 1 month" ? 16 : profile.timeline === "1 to 3 months" ? 8 : 0;
+      const preArrivalRisk = Math.max(8, Math.min(95, 40 + timelineBoost + (mentionsBeforeArrival ? 20 : 0) + (profile.reason === "Work" ? 6 : 0) + passportEffect.preArrival));
+      return {
+        budgetFit,
+        paperworkDifficulty,
+        competition,
+        preArrivalRisk,
+        budgetState,
+        passportEffect
+      };
+    }
+
+    function getCityComparison(profile) {
+      const cities = locationOptions[profile.country] || [];
+      return cities.map((cityName) => {
+        const risks = getRiskScores(profile, cityName);
+        const total = Math.round(
+          risks.budgetFit * 0.45 +
+          (100 - risks.paperworkDifficulty) * 0.2 +
+          (100 - risks.competition) * 0.2 +
+          (100 - risks.preArrivalRisk) * 0.15
+        );
+        return { city: cityName, total, ...risks };
+      }).sort((a, b) => b.total - a.total);
+    }
+
+    function renderVerdict(profile) {
+      const comparison = getCityComparison(profile);
+      if (!comparison.length) {
+        verdictPanel.innerHTML = `<div class="assistant-empty">No verdict available yet.</div>`;
+        return null;
+      }
+      const best = comparison[0];
+      const selected = comparison.find((item) => item.city === profile.city) || best;
+      const angle = best.city === profile.city
+        ? `${profile.city} is your strongest fit right now.`
+        : `${best.city} looks stronger than ${profile.city} for this exact setup.`;
+      verdictPanel.innerHTML = `
+        <div class="verdict-line">${escapeHtml(angle)}</div>
+        <p>${escapeHtml(best.budgetState.note)}</p>
+        <div class="mini-badges">
+          <span class="mini-badge">Best fit: ${escapeHtml(best.city)}</span>
+          <span class="mini-badge">Selected city score: ${selected.total}/100</span>
+          <span class="mini-badge">Budget: ${escapeHtml(selected.budgetState.label)}</span>
+        </div>
+        <div class="verdict-note">Why use NestGPT here: it turns your exact budget, move reason, and timing into a recommendation instead of leaving you to compare scattered pages manually.</div>
+      `;
+      return comparison;
+    }
+
+    function renderRiskPanel(profile) {
+      const scores = getRiskScores(profile);
+      const items = [
+        ["Budget fit", scores.budgetFit, `Driven mostly by how ${profile.city} compares with your entered budget in ${profile.currency}.`],
+        ["Paperwork difficulty", scores.paperworkDifficulty, `Based mainly on the selected country (${profile.country}) and your passport profile (${profile.nationality || "not selected"}). EU/EEA/Swiss and local-national profiles reduce friction more than non-EU profiles.`],
+        ["Rental competition", scores.competition, `This is a city-level pressure score for ${profile.city}, reflecting how competitive the local rental search is likely to feel.`],
+        ["Pre-arrival risk", scores.preArrivalRisk, `Affected most by your move timeline, whether your question suggests renting before arrival, and your passport profile (${profile.nationality || "not selected"}), which changes how much entry or residency friction the app assumes.`]
+      ];
+      riskPanel.innerHTML = `
+        <div class="score-grid">
+          ${items.map(([label, value, note]) => `
+            <div class="score-row">
+              <div class="score-head"><span>${escapeHtml(label)}</span><span>${value}/100</span></div>
+              <div class="score-bar"><div class="score-fill" style="width:${value}%"></div></div>
+              <p class="score-note">${escapeHtml(note)}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderComparePanel(profile, comparison = getCityComparison(profile)) {
+      comparePanel.innerHTML = `
+        <div class="compare-grid">
+          ${comparison.map((item) => `
+            <div class="compare-card">
+              <strong>${escapeHtml(item.city)} ${item.city === profile.city ? "• selected" : ""}</strong>
+              <p>Overall fit: ${item.total}/100</p>
+              <ul class="compare-list">
+                <li>Budget: ${escapeHtml(item.budgetState.label)}</li>
+                <li>Paperwork difficulty: ${item.paperworkDifficulty}/100</li>
+                <li>Competition: ${item.competition}/100</li>
+                <li>Pre-arrival risk: ${item.preArrivalRisk}/100</li>
+              </ul>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderActionPlan(profile) {
+      const phases = [
+        {
+          title: "This week",
+          text: `Lock your ${profile.city} target, confirm your budget in ${profile.currency}, and decide whether your main priority is speed, location, or lower friction.`
+        },
+        {
+          title: "Before contacting landlords",
+          text: `Prepare passport details, income or funding proof, your move timeline (${profile.timeline}), and a short explanation of your relocation reason (${profile.reason.toLowerCase()}).`
+        },
+        {
+          title: "Before paying anything",
+          text: "Verify the identity of the owner or agent, confirm the full upfront cost in writing, and make sure the lease timeline matches your arrival plan."
+        }
+      ];
+      if (profile.timeline === "Within 1 month" || profile.timeline === "1 to 3 months") {
+        phases.push({
+          title: "First 7 days after arrival",
+          text: `Use the first week in ${profile.city} to validate neighborhoods in person, handle registration steps, and narrow down longer-term options fast.`
+        });
+      } else {
+        phases.push({
+          title: "Next planning checkpoint",
+          text: "Re-check prices and paperwork one month before you start applying so your research stays current."
+        });
+      }
+      planPanel.innerHTML = `
+        <div class="plan-grid">
+          ${phases.map((phase) => `
+            <div class="plan-card">
+              <strong>${escapeHtml(phase.title)}</strong>
+              <p>${escapeHtml(phase.text)}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderLandlordMessage(profile) {
+      const defaultConcern = profile.message || `I am planning a move to ${profile.city} and want to understand the best housing options.`;
+      const draft = `Hello,\n\nI am planning to move to ${profile.city}, ${profile.country} for ${profile.reason.toLowerCase()} ${profile.timeline.toLowerCase()}. I have a housing budget of ${profile.budget || "my planned budget"} ${profile.currency} and I hold ${profile.nationality || "my current passport"}.\n\nI am interested in learning whether your property would be a realistic fit and what documents you would require from me. Could you also confirm the full upfront costs, the earliest move-in date, and whether any verification or viewing steps can be done before arrival?\n\nMy main concern is: ${defaultConcern}\n\nThank you.`;
+      messagePanel.innerHTML = `
+        <div class="message-builder">
+          <textarea id="landlordMessageDraft">${escapeHtml(draft)}</textarea>
+          <div class="scenario-actions">
+            <button class="micro-button" id="copyLandlordMessageButton" type="button">Copy message</button>
+          </div>
+        </div>
+      `;
+      const copyButton = document.getElementById("copyLandlordMessageButton");
+      const draftBox = document.getElementById("landlordMessageDraft");
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(draftBox.value);
+          copyButton.textContent = "Copied";
+          window.setTimeout(() => {
+            copyButton.textContent = "Copy message";
+          }, 1200);
+        } catch {
+          copyButton.textContent = "Copy failed";
+        }
+      });
+    }
+
+    function parseSourceInsights(text) {
+      const lines = String(text).split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      const sourceLines = lines.filter((line) => /^\[\d+\]/.test(line));
+      const official = sourceLines.filter((line) => /official|gov|city page|ministry|immigration office/i.test(line));
+      const market = sourceLines.filter((line) => /investropa|idealista|bambooroutes|market guide/i.test(line));
+      const benchmark = sourceLines.filter((line) => /local curated benchmark dataset/i.test(line));
+      return { official, market, benchmark };
+    }
+
+    function renderSourceInsights(text) {
+      const insights = parseSourceInsights(text);
+      const cards = [];
+      if (insights.official.length) {
+        cards.push({
+          title: "Official guidance",
+          detail: "Useful for visa, registration, and city-level rules.",
+          items: insights.official.slice(0, 2)
+        });
+      }
+      if (insights.market.length) {
+        cards.push({
+          title: "Market context",
+          detail: "Useful for price expectations and neighborhood tradeoffs.",
+          items: insights.market.slice(0, 2)
+        });
+      }
+      if (insights.benchmark.length) {
+        cards.push({
+          title: "Local benchmark data",
+          detail: "Useful for quick comparisons inside the app.",
+          items: insights.benchmark.slice(0, 2)
+        });
+      }
+      if (!cards.length) {
+        sourceInsightsPanel.innerHTML = `<div class="assistant-empty">Run a search to see a clearer source breakdown.</div>`;
+        return;
+      }
+      sourceInsightsPanel.innerHTML = `
+        <div class="source-grid">
+          ${cards.map((card) => `
+            <div class="source-card">
+              <strong>${escapeHtml(card.title)}</strong>
+              <p>${escapeHtml(card.detail)}</p>
+              <ul class="source-list">
+                ${card.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+              </ul>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function loadSavedScenarios() {
+      try {
+        const raw = window.localStorage.getItem(scenarioStorageKey);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveScenarios(list) {
+      window.localStorage.setItem(scenarioStorageKey, JSON.stringify(list.slice(0, 6)));
+    }
+
+    function applyScenario(scenario) {
+      country.value = scenario.country;
+      populateCities();
+      city.value = scenario.city;
+      budget.value = scenario.budget;
+      currency.value = scenario.currency;
+      reason.value = scenario.reason;
+      timeline.value = scenario.timeline;
+      nationality.value = scenario.nationality;
+      mode.value = scenario.mode;
+      message.value = scenario.message;
+      updateLocationPreview();
+      updateBudgetFeedback();
+      refreshAssistantLayer();
+    }
+
+    function renderSavedScenarios() {
+      const scenarios = loadSavedScenarios();
+      if (!scenarios.length) {
+        savedScenariosPanel.innerHTML = `<div class="assistant-empty">No saved scenarios yet.</div>`;
+        return;
+      }
+      savedScenariosPanel.innerHTML = `
+        <div class="scenario-grid">
+          ${scenarios.map((scenario, index) => `
+            <div class="scenario-card">
+              <strong>${escapeHtml(scenario.city)} • ${escapeHtml(scenario.budget)} ${escapeHtml(scenario.currency)}</strong>
+              <p>${escapeHtml(scenario.reason)} • ${escapeHtml(scenario.timeline)}</p>
+              <div class="scenario-actions">
+                <button class="micro-button" type="button" data-load-scenario="${index}">Load</button>
+                <button class="micro-button" type="button" data-delete-scenario="${index}">Remove</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      savedScenariosPanel.querySelectorAll("[data-load-scenario]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const scenario = scenarios[Number(button.dataset.loadScenario)];
+          if (scenario) {
+            applyScenario(scenario);
+          }
+        });
+      });
+      savedScenariosPanel.querySelectorAll("[data-delete-scenario]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const next = scenarios.filter((_, index) => index !== Number(button.dataset.deleteScenario));
+          saveScenarios(next);
+          renderSavedScenarios();
+        });
+      });
+    }
+
+    function refreshAssistantLayer(answerText = "") {
+      const profile = getProfile();
+      const comparison = renderVerdict(profile);
+      renderRiskPanel(profile);
+      renderComparePanel(profile, comparison || getCityComparison(profile));
+      renderActionPlan(profile);
+      renderLandlordMessage(profile);
+      renderSourceInsights(answerText);
+      renderSavedScenarios();
+    }
+
+    function updateDetailsSummary() {
+      const profile = getProfile();
+      const bits = [
+        profile.country || "Country",
+        profile.city || "City",
+        profile.budget ? `${profile.budget} ${profile.currency}` : "No budget",
+        profile.reason || "Reason",
+        profile.timeline || "Timeline"
+      ];
+      detailsSummary.textContent = `Trip details are collapsed. Current setup: ${bits.join(" • ")}.`;
+    }
+
+    function setTripPanelCollapsed(collapsed) {
+      tripPanel.classList.toggle("is-collapsed", collapsed);
+      detailsToggleButton.textContent = collapsed ? "Expand details" : "Collapse details";
+      updateDetailsSummary();
+    }
+
+    function setStatus(text, isError = false) {
+      status.textContent = text;
+      status.style.color = isError ? "#a74b2a" : "";
+    }
+
+    function setOutput(text, isEmpty = false) {
+      output.classList.toggle("empty-state", isEmpty);
+      if (isEmpty) {
+        output.textContent = text;
+        return;
+      }
+      const parsedSections = parseResultSections(text);
+      if (!parsedSections.length) {
+        output.innerHTML = `<div class="raw-output">${escapeHtml(text)}</div>`;
+        return;
+      }
+      output.innerHTML = parsedSections.map((section, index) => {
+        const body = renderSectionBody(section.lines);
+        return `
+          <details class="result-section" ${index < 2 ? "open" : ""}>
+            <summary>${escapeHtml(section.title)}</summary>
+            <div class="result-body">${body}</div>
+          </details>
+        `;
+      }).join("");
+    }
+
+    function setListing(listing) {
+      const listingRequested = /\b(listing|listings|example property|example listing|show me a property|show me properties|real listing|property example)\b/i.test(message.value);
+      if (!listingRequested || !listing || !listing.title || !listing.url) {
+        listingCard.classList.remove("is-visible");
+        return;
+      }
+      listingCard.classList.add("is-visible");
+      listingTitle.textContent = listing.title;
+      listingType.textContent = listing.reference_type || "Listing";
+      listingNeighborhood.textContent = listing.neighborhood || "Neighborhood not listed";
+      listingPrice.textContent = listing.price || "Price not listed";
+      listingSize.textContent = listing.size || "Size not listed";
+      listingLink.href = listing.url;
+      listingNote.textContent = listing.retrieved_on
+        ? `Retrieved on ${listing.retrieved_on}.`
+        : "Pulled from the current local city reference.";
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function parseResultSections(text) {
+      const lines = String(text).split(/\r?\n/).map((line) => line.trimEnd());
+      const sections = [];
+      let current = null;
+
+      lines.forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          if (current) {
+            current.lines.push("");
+          }
+          return;
+        }
+        const isHeading =
+          trimmed.startsWith("Mode: ") ||
+          resultHeadings.includes(trimmed) ||
+          trimmed.endsWith(":");
+        if (isHeading) {
+          current = { title: trimmed, lines: [] };
+          sections.push(current);
+          return;
+        }
+        if (!current) {
+          current = { title: "Answer", lines: [] };
+          sections.push(current);
+        }
+        current.lines.push(trimmed);
+      });
+
+      return sections.filter((section) => section.lines.some((line) => line.trim()));
+    }
+
+    function renderSectionBody(lines) {
+      const items = [];
+      let paragraph = [];
+      let bullets = [];
+
+      const flushParagraph = () => {
+        if (paragraph.length) {
+          items.push(`<p>${escapeHtml(paragraph.join(" "))}</p>`);
+          paragraph = [];
+        }
+      };
+      const flushBullets = () => {
+        if (bullets.length) {
+          items.push(`<ul>${bullets.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`);
+          bullets = [];
+        }
+      };
+
+      lines.forEach((line) => {
+        if (!line.trim()) {
+          flushParagraph();
+          flushBullets();
+          return;
+        }
+        if (line.startsWith("- ")) {
+          flushParagraph();
+          bullets.push(line.slice(2).trim());
+          return;
+        }
+        if (/^\[\d+\]/.test(line)) {
+          flushParagraph();
+          bullets.push(line);
+          return;
+        }
+        flushBullets();
+        paragraph.push(line);
+      });
+
+      flushParagraph();
+      flushBullets();
+      return items.join("") || `<p>${escapeHtml(lines.join(" "))}</p>`;
+    }
+
+    function parseBudgetValue(value) {
+      const cleaned = String(value).replace(/[^0-9.]/g, "");
+      if (!cleaned) {
+        return null;
+      }
+      const parsed = Number(cleaned);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function updateBudgetFeedback() {
+      const meta = cityBudgetMeta[city.value];
+      const amount = parseBudgetValue(budget.value);
+      if (!meta || amount === null || currency.value !== meta.currency) {
+        budgetFeedback.className = "budget-feedback";
+        budgetFeedbackText.textContent = "";
+        return;
+      }
+
+      let state = "good";
+      let label = "Good fit";
+      let messageText = `Typical range for ${city.value} is about ${meta.low} to ${meta.high} ${meta.currency}.`;
+
+      if (amount < meta.low * 0.65) {
+        state = "low";
+        label = "Too low";
+        messageText = `This is far below the typical ${city.value} range of ${meta.low} to ${meta.high} ${meta.currency}, so the budget is likely unrealistic without major tradeoffs.`;
+      } else if (amount < meta.low) {
+        state = "stretch";
+        label = "Stretch";
+        messageText = `This is below the typical ${city.value} range of ${meta.low} to ${meta.high} ${meta.currency}, so expect tradeoffs.`;
+      } else if (amount > meta.high) {
+        state = "above";
+        label = "Above range";
+        messageText = `This is above the typical ${city.value} range of ${meta.low} to ${meta.high} ${meta.currency}, so you should have more flexibility.`;
+      }
+
+      budgetFeedback.className = `budget-feedback active ${state}`;
+      budgetBadge.textContent = label;
+      budgetFeedbackText.textContent = messageText;
+    }
+
+    function buildLandlordQuestions() {
+      const profile = {
+        city: city.value,
+        country: country.value,
+        reason: reason.value,
+        timeline: timeline.value,
+        nationality: nationality.value || "my passport profile",
+        budget: budget.value.trim() ? `${budget.value.trim()} ${currency.value}` : `my budget in ${currency.value}`
+      };
+
+      const questions = [
+        `What documents do you require from a ${profile.nationality} moving to ${profile.city} for ${profile.reason.toLowerCase()}?`,
+        `Is the apartment available around ${profile.timeline.toLowerCase()}, and what is the earliest realistic move-in date?`,
+        `Can you confirm the full upfront cost, including deposit, agency fees, guarantor costs, and any other move-in charges?`,
+        `Is remote viewing or verification possible before arrival, and how do you confirm the identity of the landlord or agent?`,
+        `Is my budget of ${profile.budget} realistic for this unit, including recurring building or service charges?`
+      ];
+
+      questionBuilderOutput.innerHTML = `<ol class="question-list">${questions.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>`;
+    }
+
+    function populateCountries() {
+      Object.keys(locationOptions).forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        country.appendChild(option);
+      });
+      country.value = "Japan";
+      populateCities();
+      currency.value = "JPY";
+    }
+
+    function populateCities() {
+      const cities = locationOptions[country.value] || [];
+      city.innerHTML = "";
+      cities.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        city.appendChild(option);
+      });
+      if (country.value === "Japan") {
+        currency.value = "JPY";
+      } else if (country.value === "Germany" || country.value === "Portugal") {
+        currency.value = "EUR";
+      }
+      updateLocationPreview();
+      updateBudgetFeedback();
+      refreshAssistantLayer(output.innerText || "");
+    }
+
+    function updateLocationPreview() {
+      const selectedCity = city.value;
+      const selectedCountry = country.value;
+      const meta = locationMeta[selectedCountry] || locationMeta.Japan;
+      const cities = locationOptions[selectedCountry] || [];
+
+      locationSummary.className = `location-summary ${meta.className}`;
+      countryMark.textContent = meta.mark;
+      locationCity.textContent = selectedCity || "Tokyo";
+      locationCountry.textContent = selectedCountry || "Japan";
+      locationRegion.textContent = meta.region;
+      locationType.textContent = `${cities.length} supported cities`;
+      cityList.innerHTML = cities.map((name) => `
+        <div class="city-option${name === selectedCity ? " active" : ""}" data-city-card="${name}">
+          <div class="city-left">
+            <span class="city-bullet"></span>
+            <div>
+              <div class="city-name">${name}</div>
+              <div class="city-state">${selectedCountry}</div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    country.addEventListener("change", populateCities);
+    city.addEventListener("change", updateLocationPreview);
+    city.addEventListener("change", updateBudgetFeedback);
+    city.addEventListener("change", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    budget.addEventListener("input", updateBudgetFeedback);
+    budget.addEventListener("input", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    currency.addEventListener("change", updateBudgetFeedback);
+    currency.addEventListener("change", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    reason.addEventListener("change", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    timeline.addEventListener("change", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    nationality.addEventListener("change", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    message.addEventListener("input", () => refreshAssistantLayer(output.textContent || output.innerText || ""));
+    questionBuilderButton.addEventListener("click", buildLandlordQuestions);
+    raiseBudgetButton.addEventListener("click", () => {
+      const amount = parseBudgetValue(budget.value);
+      if (amount === null) {
+        return;
+      }
+      budget.value = String(Math.round(amount * 1.15));
+      updateBudgetFeedback();
+      refreshAssistantLayer(output.innerText || "");
+    });
+    lowerBudgetButton.addEventListener("click", () => {
+      const amount = parseBudgetValue(budget.value);
+      if (amount === null) {
+        return;
+      }
+      budget.value = String(Math.max(0, Math.round(amount * 0.85)));
+      updateBudgetFeedback();
+      refreshAssistantLayer(output.innerText || "");
+    });
+    pushTimelineButton.addEventListener("click", () => {
+      const index = timelineOrder.indexOf(timeline.value);
+      if (index >= 0 && index < timelineOrder.length - 1) {
+        timeline.value = timelineOrder[index + 1];
+        refreshAssistantLayer(output.innerText || "");
+      }
+    });
+    switchCityButton.addEventListener("click", () => {
+      const comparison = getCityComparison(getProfile());
+      if (comparison.length) {
+        city.value = comparison[0].city;
+        updateLocationPreview();
+        updateBudgetFeedback();
+        refreshAssistantLayer(output.innerText || "");
+      }
+    });
+    saveScenarioButton.addEventListener("click", () => {
+      const profile = getProfile();
+      const scenarios = loadSavedScenarios();
+      const scenario = {
+        country: profile.country,
+        city: profile.city,
+        budget: profile.budget,
+        currency: profile.currency,
+        reason: profile.reason,
+        timeline: profile.timeline,
+        nationality: profile.nationality,
+        mode: profile.mode,
+        message: profile.message
+      };
+      const next = [scenario, ...scenarios.filter((item) => !(item.city === scenario.city && item.budget === scenario.budget && item.currency === scenario.currency && item.reason === scenario.reason))];
+      saveScenarios(next);
+      renderSavedScenarios();
+    });
+    detailsToggleButton.addEventListener("click", () => {
+      setTripPanelCollapsed(!tripPanel.classList.contains("is-collapsed"));
+    });
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        message.value = chip.dataset.prompt || "";
+        message.focus();
+      });
+    });
+
+    askButton.addEventListener("click", async () => {
+      if (!budget.value.trim() || !nationality.value) {
+        setStatus("Add your budget and passport profile first.", true);
+        return;
+      }
+
+      askButton.disabled = true;
+      clearButton.disabled = true;
+      setStatus(
+        mode.value === "baseline"
+          ? "Drafting a baseline AI answer..."
+          : "Researching sources and drafting an answer..."
+      );
+      setOutput("Working on your relocation brief...", true);
+
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            country: country.value,
+            city: city.value,
+            budget: budget.value.trim(),
+            currency: currency.value,
+            reason: reason.value,
+            timeline: timeline.value,
+            nationality: nationality.value,
+            mode: mode.value,
+            message: message.value.trim()
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Request failed.");
+        }
+        setListing(data.listing || null);
+        setOutput(data.output || "No answer returned.");
+        refreshAssistantLayer(data.output || "");
+        setTripPanelCollapsed(true);
+        setStatus("Finished. Review the answer and adjust the form if you want a narrower result.");
+      } catch (error) {
+        setStatus("Request failed. Check your model key or network settings and try again.", true);
+        setListing(null);
+        setOutput(String(error), false);
+        refreshAssistantLayer(String(error));
+      } finally {
+        askButton.disabled = false;
+        clearButton.disabled = false;
+      }
+    });
+
+    clearButton.addEventListener("click", () => {
+      country.value = "Japan";
+      populateCities();
+      budget.value = "";
+      currency.value = "JPY";
+      reason.value = "Work";
+      timeline.value = "Within 1 month";
+      nationality.value = "";
+      mode.value = "research";
+      message.value = "";
+      setListing(null);
+      setOutput("Fill in your relocation details, then ask NestGPT a focused question.", true);
+      setStatus("Ready when you are.");
+      setTripPanelCollapsed(false);
+      updateLocationPreview();
+      updateBudgetFeedback();
+      questionBuilderOutput.textContent = "Choose a city and move profile, then build a tailored landlord question list.";
+      refreshAssistantLayer("");
+    });
+
+    populateCountries();
+    setTripPanelCollapsed(false);
+    updateLocationPreview();
+    updateBudgetFeedback();
+    renderSavedScenarios();
+    refreshAssistantLayer("");
+  </script>
+</body>
+</html>
