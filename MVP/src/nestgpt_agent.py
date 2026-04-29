@@ -30,7 +30,7 @@ USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/124.0 Safari/537.36 NestGPT/0.1"
-)
+)def
 
 HTTP = requests.Session()
 HTTP.trust_env = False
@@ -325,9 +325,10 @@ class DatasetEvidence:
 
 
 def load_text(path: str) -> str:
-    with open(path, "r", encoding="utf-8") as file:
-        return file.read()
-
+    file_path = Path(path)
+    if not file_path.is_absolute():
+        file_path = SRC_DIR / file_path
+    return file_path.read_text(encoding="utf-8")
 
 def load_api_key() -> str:
     env_key = os.getenv("OPENROUTER_API_KEY", "").strip()
