@@ -1,6 +1,6 @@
 # NestGPT MVP Report
 
-## 1. Executive Summary
+## 1. Summary
 
 NestGPT is a local web application for housing-focused relocation planning. It targets users who are considering a move to a supported city in Japan, Germany, or Portugal and need more than a generic chatbot answer. The MVP combines structured user inputs, retrieval from live web sources, and small open-dataset slices to produce grounded relocation guidance.
 
@@ -29,7 +29,7 @@ Example usage narrative:
 3. NestGPT builds a focused search query, gathers web results, loads any matching local rental benchmarks, and generates a grounded answer.
 4. The UI then adds a budget/risk readout, same-country city comparison, and suggested next steps the user can act on immediately.
 
-The product is meant to reduce three pain points:
+The product is meant to reduce three problems:
 
 - scattered and inconsistent relocation information
 - difficulty translating a personal budget into a realistic housing judgment
@@ -116,7 +116,6 @@ NestGPT is an agentic workflow built around a hosted frontier language model rat
 
 Model strategy:
 
-- default hosted model: `openai/gpt-5.4` through OpenRouter
 - baseline mode: direct answer generation from the hosted model without retrieval
 - research mode: retrieval-augmented prompting using web excerpts plus local dataset evidence
 
@@ -191,17 +190,10 @@ Risk areas:
 
 ## 8. Next Steps
 
-If given two to three more months, the highest-value next steps would be:
+If given more time, the next steps would be:
 
-1. Add a lightweight evaluation harness that runs benchmark cases automatically and saves outputs for baseline-versus-research comparison.
+1. Add an evaluation that runs benchmark cases automatically and saves outputs for baseline-versus-research comparison.
 2. Expand data coverage with more official local housing sources and stronger provenance tracking.
 3. Improve the listing layer from a single example card to multiple validated listing references.
 4. Add cross-country comparison so users can compare, for example, Berlin versus Lisbon directly.
 5. Add export or shareable summary generation for users who want to save a relocation brief.
-
-## Appendix: What Is Included In The MVP Package
-
-- runnable source code in `mvp/src/`
-- documented data in `mvp/data/`
-- model-hosting notes in `mvp/models/`
-- setup and demo instructions in `mvp/README.md`
