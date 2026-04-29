@@ -30,7 +30,7 @@ USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/124.0 Safari/537.36 NestGPT/0.1"
-)def
+)
 
 HTTP = requests.Session()
 HTTP.trust_env = False
